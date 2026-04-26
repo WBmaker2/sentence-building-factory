@@ -1,4 +1,15 @@
-import { CheckCircle2, ChevronRight, RotateCcw, Sparkles } from 'lucide-react';
+import {
+  BarChart3,
+  BookOpenText,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  RotateCcw,
+  Settings,
+  Sparkles,
+  UserRound,
+  UsersRound,
+} from 'lucide-react';
 import { useMemo, useState, type DragEvent } from 'react';
 import { puzzles } from './data/puzzles';
 import {
@@ -102,38 +113,83 @@ export default function App() {
   return (
     <main className={`factory-app${showSuccess ? ' factory-app--celebrating' : ''}`}>
       <header className="factory-topbar">
-        <div>
-          <p className="eyebrow">1~2학년 국어 · 문장 만들기</p>
-          <h1>뚝딱뚝딱 문장 만들기 공장</h1>
+        <div className="brand-area">
+          <span className="gear-mark" aria-hidden="true">
+            <Settings size={26} />
+          </span>
+          <span className="factory-mark" aria-hidden="true">
+            <span />
+            <span />
+          </span>
+          <div>
+            <p className="eyebrow">1~2학년 국어 · 문장 만들기</p>
+            <h1>
+              <span>뚝딱뚝딱</span> 문장 만들기 <span>공장</span>
+            </h1>
+          </div>
         </div>
-        <section className="teacher-tools" aria-label="교사용 설정">
-          <label>
-            문장 단계 선택
-            <select
-              value={puzzle.id}
-              onChange={(event) =>
-                loadPuzzle(puzzles.findIndex((item) => item.id === event.target.value))
-              }
-            >
-              {puzzles.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={hintMode}
-              onChange={(event) => setHintMode(event.target.checked)}
-            />
-            힌트
-          </label>
-        </section>
+        <div className="top-actions">
+          <nav className="mode-pills" aria-label="활동 보기">
+            <span>
+              <UsersRound aria-hidden="true" size={22} />
+              학생 모드
+            </span>
+            <span>
+              <BarChart3 aria-hidden="true" size={22} />
+              진행 현황
+            </span>
+            <span>
+              <BookOpenText aria-hidden="true" size={22} />
+              문장 예시
+            </span>
+          </nav>
+          <section className="teacher-tools" aria-label="교사용 설정">
+            <label>
+              문장 단계 선택
+              <select
+                value={puzzle.id}
+                onChange={(event) =>
+                  loadPuzzle(puzzles.findIndex((item) => item.id === event.target.value))
+                }
+              >
+                {puzzles.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={hintMode}
+                onChange={(event) => setHintMode(event.target.checked)}
+              />
+              힌트
+            </label>
+            <span className="teacher-chip">
+              <UserRound aria-hidden="true" size={22} />
+              선생님
+              <ChevronDown aria-hidden="true" size={18} />
+            </span>
+          </section>
+        </div>
       </header>
 
       <section className="factory-stage" aria-labelledby="puzzle-title">
+        <div className="helper-strip">
+          <div className="robot-mascot" aria-hidden="true">
+            <span className="helmet" />
+            <span className="face">
+              <span className="eye eye-left" />
+              <span className="eye eye-right" />
+              <span className="smile" />
+            </span>
+            <span className="wrench" />
+          </div>
+          <p className="speech-bubble">단어 카드를 기차 칸에 끌어다 놓아 문장을 만들어 보세요!</p>
+        </div>
+
         <div className="prompt-panel">
           <p className="stage-count">
             {puzzleIndex + 1} / {puzzles.length}
@@ -142,23 +198,42 @@ export default function App() {
           <p>{puzzle.prompt}</p>
         </div>
 
-        <div className="conveyor" aria-label="문장 조립 칸">
-          {puzzle.slots.map((role, index) => {
-            const block = getBlockById(puzzle, slots[index]);
-            return (
-              <button
-                className={`sentence-slot sentence-slot--${role}${block ? ' sentence-slot--filled' : ''}`}
-                key={`${role}-${index}`}
-                onClick={() => handleSlotClick(index)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={(event) => handleDrop(event, index)}
-                aria-label={getSlotLabel(index, roleLabels[role], block)}
-              >
-                <span className="slot-label">{roleLabels[role]}</span>
-                <span className="slot-word">{block?.text ?? '놓기'}</span>
-              </button>
-            );
-          })}
+        <div className="train-yard">
+          <div className="cloud cloud-left" aria-hidden="true" />
+          <div className="cloud cloud-right" aria-hidden="true" />
+          <div className="factory-building" aria-hidden="true">
+            <span className="chimney" />
+            <span className="roof" />
+            <span className="wall" />
+          </div>
+          <div className="locomotive" aria-hidden="true">
+            <span className="engine-face" />
+            <span className="engine-cab" />
+            <span className="engine-stack" />
+            <span className="engine-wheel wheel-one" />
+            <span className="engine-wheel wheel-two" />
+          </div>
+          <div className="conveyor" aria-label="문장 조립 칸">
+            {puzzle.slots.map((role, index) => {
+              const block = getBlockById(puzzle, slots[index]);
+              return (
+                <button
+                  className={`sentence-slot sentence-slot--${role}${block ? ' sentence-slot--filled' : ''}`}
+                  key={`${role}-${index}`}
+                  onClick={() => handleSlotClick(index)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => handleDrop(event, index)}
+                  aria-label={getSlotLabel(index, roleLabels[role], block)}
+                >
+                  <span className="slot-label">{roleLabels[role]}</span>
+                  <span className="slot-word">{block?.text ?? '놓기'}</span>
+                  <span className="slot-wheel slot-wheel-left" aria-hidden="true" />
+                  <span className="slot-wheel slot-wheel-right" aria-hidden="true" />
+                </button>
+              );
+            })}
+          </div>
+          <div className="train-track" aria-hidden="true" />
         </div>
 
         <div className="controls">
