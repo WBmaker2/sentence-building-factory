@@ -10,5 +10,6 @@ const vitestConfig = {
 };
 
 export default mergeConfig(defineConfig({
+  base: '/sentence-building-factory/',
   plugins: [react()],
 }), vitestConfig);
