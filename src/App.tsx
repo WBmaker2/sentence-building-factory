@@ -14,24 +14,15 @@ import {
 
 const successMessage = '참 잘했어요!';
 
-type SelectChangeEvent = {
-  target: {
-    value: string;
-  };
-};
-
-type CheckboxChangeEvent = {
-  target: {
-    checked: boolean;
-  };
-};
-
-type DragPreventEvent = {
-  preventDefault(): void;
-};
-
 function getRoleClass(block: SentenceBlock) {
   return `word-block word-block--${block.role}`;
+}
+
+function getSlotLabel(index: number, roleLabel: string, block?: SentenceBlock) {
+  const baseLabel = `${index + 1}번 칸 ${roleLabel}`;
+  return block
+    ? `${baseLabel}, ${block.text} 놓임. 선택한 블록이 없으면 눌러서 빼기`
+    : `${baseLabel}, 비어 있음. 선택한 블록을 눌러서 놓기`;
 }
 
 export default function App() {
@@ -120,7 +111,7 @@ export default function App() {
             문장 단계 선택
             <select
               value={puzzle.id}
-              onChange={(event: SelectChangeEvent) =>
+              onChange={(event) =>
                 loadPuzzle(puzzles.findIndex((item) => item.id === event.target.value))
               }
             >
@@ -135,7 +126,7 @@ export default function App() {
             <input
               type="checkbox"
               checked={hintMode}
-              onChange={(event: CheckboxChangeEvent) => setHintMode(event.target.checked)}
+              onChange={(event) => setHintMode(event.target.checked)}
             />
             힌트
           </label>
@@ -159,9 +150,9 @@ export default function App() {
                 className={`sentence-slot sentence-slot--${role}${block ? ' sentence-slot--filled' : ''}`}
                 key={`${role}-${index}`}
                 onClick={() => handleSlotClick(index)}
-                onDragOver={(event: DragPreventEvent) => event.preventDefault()}
-                onDrop={(event: DragEvent<HTMLButtonElement>) => handleDrop(event, index)}
-                aria-label={`${index + 1}번 칸 ${roleLabels[role]}`}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => handleDrop(event, index)}
+                aria-label={getSlotLabel(index, roleLabels[role], block)}
               >
                 <span className="slot-label">{roleLabels[role]}</span>
                 <span className="slot-word">{block?.text ?? '놓기'}</span>
