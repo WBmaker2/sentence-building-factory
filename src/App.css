@@ -99,6 +99,12 @@ h2 {
   block-size: 20px;
 }
 
+.toggle {
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
 .factory-stage {
   display: grid;
   align-content: center;
@@ -217,7 +223,7 @@ input:focus-visible {
 }
 
 .next-button {
-  background: #1f9d74;
+  background: #12745a;
   color: #ffffff;
 }
 
