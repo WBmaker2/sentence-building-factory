@@ -2,9 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
-async function placeBlock(text: string, slotLabel: RegExp) {
-  const user = userEvent.setup();
-  await user.click(screen.getByRole('button', { name: new RegExp(`${text} 블록 선택`) }));
+async function placeBlock(user: ReturnType<typeof userEvent.setup>, text: string, slotLabel: RegExp) {
+  await user.click(screen.getByRole('button', { name: `${text} 블록 선택` }));
   await user.click(screen.getByRole('button', { name: slotLabel }));
 }
 
@@ -12,10 +11,10 @@ test('builds a correct sentence and moves to the next puzzle', async () => {
   const user = userEvent.setup();
   render(<App />);
 
-  await placeBlock('강아지가', /1번 칸/);
-  await placeBlock('뼈다귀를', /2번 칸/);
-  await placeBlock('먹는다', /3번 칸/);
-  await placeBlock('.', /4번 칸/);
+  await placeBlock(user, '강아지가', /1번 칸/);
+  await placeBlock(user, '뼈다귀를', /2번 칸/);
+  await placeBlock(user, '먹는다', /3번 칸/);
+  await placeBlock(user, '.', /4번 칸/);
   await user.click(screen.getByRole('button', { name: '정답 확인' }));
 
   expect(screen.getByText('참 잘했어요!')).toBeInTheDocument();
@@ -29,10 +28,10 @@ test('shows punctuation feedback when the sentence mark is wrong', async () => {
   const user = userEvent.setup();
   render(<App />);
 
-  await placeBlock('강아지가', /1번 칸/);
-  await placeBlock('뼈다귀를', /2번 칸/);
-  await placeBlock('먹는다', /3번 칸/);
-  await placeBlock('?', /4번 칸/);
+  await placeBlock(user, '강아지가', /1번 칸/);
+  await placeBlock(user, '뼈다귀를', /2번 칸/);
+  await placeBlock(user, '먹는다', /3번 칸/);
+  await placeBlock(user, '?', /4번 칸/);
   await user.click(screen.getByRole('button', { name: '정답 확인' }));
 
   expect(screen.getByText('문장 부호를 다시 살펴봐요.')).toBeInTheDocument();
