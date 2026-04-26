@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronRight,
   RotateCcw,
-  Settings,
   Sparkles,
   UserRound,
   UsersRound,
@@ -24,6 +23,14 @@ import {
 } from './lib/sentenceFactory';
 
 const successMessage = '참 잘했어요!';
+const assetUrl = (fileName: string) => `${import.meta.env.BASE_URL}assets/${fileName}`;
+
+const generatedAssets = {
+  factory: assetUrl('factory-icon.png'),
+  gear: assetUrl('gear-icon.png'),
+  locomotive: assetUrl('locomotive.png'),
+  robot: assetUrl('robot-mascot.png'),
+};
 
 function getRoleClass(block: SentenceBlock) {
   return `word-block word-block--${block.role}`;
@@ -114,13 +121,8 @@ export default function App() {
     <main className={`factory-app${showSuccess ? ' factory-app--celebrating' : ''}`}>
       <header className="factory-topbar">
         <div className="brand-area">
-          <span className="gear-mark" aria-hidden="true">
-            <Settings size={26} />
-          </span>
-          <span className="factory-mark" aria-hidden="true">
-            <span />
-            <span />
-          </span>
+          <img className="brand-art-icon brand-art-icon--gear" src={generatedAssets.gear} alt="" aria-hidden="true" />
+          <img className="brand-art-icon brand-art-icon--factory" src={generatedAssets.factory} alt="" aria-hidden="true" />
           <div>
             <p className="eyebrow">1~2학년 국어 · 문장 만들기</p>
             <h1>
@@ -178,15 +180,7 @@ export default function App() {
 
       <section className="factory-stage" aria-labelledby="puzzle-title">
         <div className="helper-strip">
-          <div className="robot-mascot" aria-hidden="true">
-            <span className="helmet" />
-            <span className="face">
-              <span className="eye eye-left" />
-              <span className="eye eye-right" />
-              <span className="smile" />
-            </span>
-            <span className="wrench" />
-          </div>
+          <img className="robot-mascot" src={generatedAssets.robot} alt="" aria-hidden="true" />
           <p className="speech-bubble">단어 카드를 기차 칸에 끌어다 놓아 문장을 만들어 보세요!</p>
         </div>
 
@@ -201,18 +195,8 @@ export default function App() {
         <div className="train-yard">
           <div className="cloud cloud-left" aria-hidden="true" />
           <div className="cloud cloud-right" aria-hidden="true" />
-          <div className="factory-building" aria-hidden="true">
-            <span className="chimney" />
-            <span className="roof" />
-            <span className="wall" />
-          </div>
-          <div className="locomotive" aria-hidden="true">
-            <span className="engine-face" />
-            <span className="engine-cab" />
-            <span className="engine-stack" />
-            <span className="engine-wheel wheel-one" />
-            <span className="engine-wheel wheel-two" />
-          </div>
+          <img className="factory-building-image" src={generatedAssets.factory} alt="" aria-hidden="true" />
+          <img className="locomotive" src={generatedAssets.locomotive} alt="" aria-hidden="true" />
           <div className="conveyor" aria-label="문장 조립 칸">
             {puzzle.slots.map((role, index) => {
               const block = getBlockById(puzzle, slots[index]);
