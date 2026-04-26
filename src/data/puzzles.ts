@@ -1,0 +1,78 @@
+import type { SentencePuzzle } from '../lib/sentenceFactory';
+
+const slots: SentencePuzzle['slots'] = ['subject', 'object', 'predicate', 'punctuation'];
+
+export const puzzles: SentencePuzzle[] = [
+  {
+    id: 'dog-eats-bone',
+    title: '강아지 문장',
+    prompt: '강아지가 무엇을 하는지 문장으로 만들어요.',
+    slots,
+    answer: ['dog-subject', 'bone-object', 'eat-predicate', 'period'],
+    feedback: '강아지가 뼈다귀를 먹는 문장이 되었어요.',
+    blocks: [
+      { id: 'dog-subject', text: '강아지가', role: 'subject' },
+      { id: 'cat-subject', text: '고양이가', role: 'subject' },
+      { id: 'bone-object', text: '뼈다귀를', role: 'object' },
+      { id: 'book-object', text: '책을', role: 'object' },
+      { id: 'eat-predicate', text: '먹는다', role: 'predicate' },
+      { id: 'read-predicate', text: '읽는다', role: 'predicate' },
+      { id: 'period', text: '.', role: 'punctuation' },
+      { id: 'question', text: '?', role: 'punctuation' },
+    ],
+  },
+  {
+    id: 'butterfly-flies',
+    title: '나비 문장',
+    prompt: '나비가 어디에서 어떻게 움직이는지 문장으로 만들어요.',
+    slots,
+    answer: ['butterfly-subject', 'flower-object', 'fly-predicate', 'period'],
+    feedback: '나비가 꽃 위를 날아가는 문장이 되었어요.',
+    blocks: [
+      { id: 'butterfly-subject', text: '나비가', role: 'subject' },
+      { id: 'bird-subject', text: '새가', role: 'subject' },
+      { id: 'flower-object', text: '꽃 위를', role: 'object' },
+      { id: 'yard-object', text: '마당을', role: 'object' },
+      { id: 'fly-predicate', text: '날아간다', role: 'predicate' },
+      { id: 'sit-predicate', text: '앉는다', role: 'predicate' },
+      { id: 'period', text: '.', role: 'punctuation' },
+      { id: 'question', text: '?', role: 'punctuation' },
+    ],
+  },
+  {
+    id: 'help-friend-question',
+    title: '물음표 문장',
+    prompt: '친구에게 묻는 문장에 알맞은 문장 부호를 붙여요.',
+    slots,
+    answer: ['i-subject', 'friend-object', 'help-predicate', 'question'],
+    feedback: '친구에게 묻는 문장에는 물음표가 잘 어울려요.',
+    blocks: [
+      { id: 'i-subject', text: '내가', role: 'subject' },
+      { id: 'teacher-subject', text: '선생님이', role: 'subject' },
+      { id: 'friend-object', text: '친구를', role: 'object' },
+      { id: 'ball-object', text: '공을', role: 'object' },
+      { id: 'help-predicate', text: '도와줄까', role: 'predicate' },
+      { id: 'throw-predicate', text: '던진다', role: 'predicate' },
+      { id: 'period', text: '.', role: 'punctuation' },
+      { id: 'question', text: '?', role: 'punctuation' },
+    ],
+  },
+  {
+    id: 'sibling-reads-book',
+    title: '동생 문장',
+    prompt: '동생이 무엇을 하는지 바른 문장으로 만들어요.',
+    slots,
+    answer: ['sibling-subject', 'picture-book-object', 'read-predicate', 'period'],
+    feedback: '동생이 그림책을 읽는 문장이 되었어요.',
+    blocks: [
+      { id: 'sibling-subject', text: '동생이', role: 'subject' },
+      { id: 'rabbit-subject', text: '토끼가', role: 'subject' },
+      { id: 'picture-book-object', text: '그림책을', role: 'object' },
+      { id: 'carrot-object', text: '당근을', role: 'object' },
+      { id: 'read-predicate', text: '읽는다', role: 'predicate' },
+      { id: 'eat-predicate', text: '먹는다', role: 'predicate' },
+      { id: 'period', text: '.', role: 'punctuation' },
+      { id: 'question', text: '?', role: 'punctuation' },
+    ],
+  },
+];
