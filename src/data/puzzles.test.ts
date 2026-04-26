@@ -24,4 +24,13 @@ describe('puzzles', () => {
       }
     }
   });
+
+  test('uses answer blocks with roles matching slot order', () => {
+    for (const puzzle of puzzles) {
+      for (const [index, answerId] of puzzle.answer.entries()) {
+        const block = puzzle.blocks.find((candidate) => candidate.id === answerId);
+        expect(block?.role).toBe(puzzle.slots[index]);
+      }
+    }
+  });
 });

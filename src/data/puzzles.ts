@@ -1,13 +1,13 @@
 import type { SentencePuzzle } from '../lib/sentenceFactory';
 
-const slots: SentencePuzzle['slots'] = ['subject', 'object', 'predicate', 'punctuation'];
+const sentenceSlots = (): SentencePuzzle['slots'] => ['subject', 'object', 'predicate', 'punctuation'];
 
 export const puzzles: SentencePuzzle[] = [
   {
     id: 'dog-eats-bone',
     title: '강아지 문장',
     prompt: '강아지가 무엇을 하는지 문장으로 만들어요.',
-    slots,
+    slots: sentenceSlots(),
     answer: ['dog-subject', 'bone-object', 'eat-predicate', 'period'],
     feedback: '강아지가 뼈다귀를 먹는 문장이 되었어요.',
     blocks: [
@@ -25,7 +25,7 @@ export const puzzles: SentencePuzzle[] = [
     id: 'butterfly-flies',
     title: '나비 문장',
     prompt: '나비가 어디에서 어떻게 움직이는지 문장으로 만들어요.',
-    slots,
+    slots: sentenceSlots(),
     answer: ['butterfly-subject', 'flower-object', 'fly-predicate', 'period'],
     feedback: '나비가 꽃 위를 날아가는 문장이 되었어요.',
     blocks: [
@@ -43,7 +43,7 @@ export const puzzles: SentencePuzzle[] = [
     id: 'help-friend-question',
     title: '물음표 문장',
     prompt: '친구에게 묻는 문장에 알맞은 문장 부호를 붙여요.',
-    slots,
+    slots: sentenceSlots(),
     answer: ['i-subject', 'friend-object', 'help-predicate', 'question'],
     feedback: '친구에게 묻는 문장에는 물음표가 잘 어울려요.',
     blocks: [
@@ -61,7 +61,7 @@ export const puzzles: SentencePuzzle[] = [
     id: 'sibling-reads-book',
     title: '동생 문장',
     prompt: '동생이 무엇을 하는지 바른 문장으로 만들어요.',
-    slots,
+    slots: sentenceSlots(),
     answer: ['sibling-subject', 'picture-book-object', 'read-predicate', 'period'],
     feedback: '동생이 그림책을 읽는 문장이 되었어요.',
     blocks: [
