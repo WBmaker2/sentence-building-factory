@@ -1,7 +1,47 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import App from './App';
 
-test('renders the app title', () => {
+async function placeBlock(text: string, slotLabel: RegExp) {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: new RegExp(`${text} 블록 선택`) }));
+  await user.click(screen.getByRole('button', { name: slotLabel }));
+}
+
+test('builds a correct sentence and moves to the next puzzle', async () => {
+  const user = userEvent.setup();
   render(<App />);
-  expect(screen.getByRole('heading', { name: '뚝딱뚝딱 문장 만들기 공장' })).toBeInTheDocument();
+
+  await placeBlock('강아지가', /1번 칸/);
+  await placeBlock('뼈다귀를', /2번 칸/);
+  await placeBlock('먹는다', /3번 칸/);
+  await placeBlock('.', /4번 칸/);
+  await user.click(screen.getByRole('button', { name: '정답 확인' }));
+
+  expect(screen.getByText('참 잘했어요!')).toBeInTheDocument();
+  expect(screen.getByRole('status')).toHaveTextContent('강아지가 뼈다귀를 먹는다.');
+
+  await user.click(screen.getByRole('button', { name: '다음 문장' }));
+  expect(screen.getByRole('heading', { name: '나비 문장' })).toBeInTheDocument();
+});
+
+test('shows punctuation feedback when the sentence mark is wrong', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await placeBlock('강아지가', /1번 칸/);
+  await placeBlock('뼈다귀를', /2번 칸/);
+  await placeBlock('먹는다', /3번 칸/);
+  await placeBlock('?', /4번 칸/);
+  await user.click(screen.getByRole('button', { name: '정답 확인' }));
+
+  expect(screen.getByText('문장 부호를 다시 살펴봐요.')).toBeInTheDocument();
+});
+
+test('lets the teacher choose a different puzzle', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.selectOptions(screen.getByLabelText('문장 단계 선택'), 'help-friend-question');
+  expect(screen.getByRole('heading', { name: '물음표 문장' })).toBeInTheDocument();
 });
