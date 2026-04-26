@@ -1,8 +1,22 @@
 /// <reference types="vite/client" />
 
 declare module 'react' {
+  export type DragEvent<T = Element> = {
+    currentTarget: T;
+    dataTransfer: DataTransfer;
+    preventDefault(): void;
+  };
+
+  export type ReactNode = unknown;
+
+  export function useMemo<T>(factory: () => T, deps: unknown[]): T;
+  export function useState<T>(initialState: T | (() => T)): [
+    T,
+    (nextState: T | ((currentState: T) => T)) => void,
+  ];
+
   const React: {
-    StrictMode: typeof import('react').Fragment;
+    StrictMode: (props: { children?: ReactNode }) => unknown;
   };
 
   export default React;
@@ -29,7 +43,8 @@ declare namespace JSX {
   }
 }
 
-declare const test: (name: string, fn: () => void) => void;
+declare const test: (name: string, fn: () => void | Promise<void>) => void;
 declare const expect: (actual: unknown) => {
   toBeInTheDocument: () => void;
+  toHaveTextContent: (text: string | RegExp) => void;
 };
