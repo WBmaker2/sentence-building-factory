@@ -2,6 +2,12 @@
   font-family: Inter, Pretendard, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #253047;
   background: #f8f2e8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -9,13 +15,354 @@ body {
 }
 
 button,
-input,
 select,
-textarea {
+input {
   font: inherit;
 }
 
-.app-shell {
+button {
+  cursor: pointer;
+}
+
+.factory-app {
   min-height: 100vh;
-  padding: 32px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 20px;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.24)),
+    #f8f2e8;
+}
+
+.factory-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.eyebrow,
+.stage-count {
+  margin: 0 0 6px;
+  color: #65708a;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.75rem, 3vw, 2.7rem);
+  line-height: 1.15;
+}
+
+h2 {
+  margin-bottom: 8px;
+  font-size: 1.55rem;
+}
+
+.teacher-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 2px solid #e0d7c8;
+  border-radius: 8px;
+  background: #fffaf1;
+}
+
+.teacher-tools label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #46516a;
+  font-weight: 700;
+}
+
+.teacher-tools select {
+  min-height: 40px;
+  border: 2px solid #cfc3b2;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #253047;
+}
+
+.toggle input {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.factory-stage {
+  display: grid;
+  align-content: center;
+  gap: 22px;
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+
+.prompt-panel {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 3px solid #ded1bd;
+  padding-bottom: 14px;
+}
+
+.prompt-panel p:last-child {
+  max-width: 520px;
+  margin-bottom: 0;
+  color: #4d5872;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.conveyor {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 14px;
+  padding: 18px;
+  border: 3px solid #85735d;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(133, 115, 93, 0.18) 48% 52%, transparent 52%),
+    #fff8e7;
+  box-shadow: inset 0 -10px 0 rgba(133, 115, 93, 0.12);
+}
+
+.sentence-slot {
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 14px;
+  border: 3px dashed #b8a68c;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #253047;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.sentence-slot:focus-visible,
+.word-block:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.next-button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 4px solid #284bff;
+  outline-offset: 3px;
+}
+
+.sentence-slot:hover {
+  transform: translateY(-2px);
+  border-color: #75644f;
+}
+
+.sentence-slot--filled {
+  border-style: solid;
+  background: #ffffff;
+}
+
+.slot-label {
+  color: #67718c;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.slot-word {
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  font-size: clamp(1.18rem, 2vw, 1.55rem);
+  font-weight: 900;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button,
+.next-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 18px;
+  font-weight: 900;
+}
+
+.primary-button {
+  background: #253047;
+  color: #ffffff;
+}
+
+.secondary-button {
+  background: #e8dfd1;
+  color: #253047;
+}
+
+.next-button {
+  background: #1f9d74;
+  color: #ffffff;
+}
+
+.feedback {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid #e0d7c8;
+  border-radius: 8px;
+  background: #fffaf1;
+  text-align: center;
+}
+
+.feedback strong {
+  font-size: 1.16rem;
+}
+
+.feedback span {
+  color: #57627a;
+  font-weight: 700;
+}
+
+.feedback--success {
+  border-color: #1f9d74;
+  background: #eaf8f2;
+  color: #12684e;
+}
+
+.block-tray {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+  gap: 12px;
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #e0d7c8;
+}
+
+.word-block {
+  min-height: 70px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  border: 3px solid rgba(37, 48, 71, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  color: #253047;
+  font-size: 1.15rem;
+  font-weight: 900;
+  box-shadow: 0 7px 0 rgba(37, 48, 71, 0.18);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.word-block span {
+  color: rgba(37, 48, 71, 0.72);
+  font-size: 0.78rem;
+}
+
+.word-block:hover,
+.word-block--selected {
+  transform: translateY(-4px);
+  box-shadow: 0 11px 0 rgba(37, 48, 71, 0.16);
+}
+
+.word-block--subject {
+  background: #9ed9ff;
+}
+
+.word-block--object {
+  background: #ffe37a;
+}
+
+.word-block--predicate {
+  background: #ff9b8f;
+}
+
+.word-block--punctuation {
+  background: #9ee7c1;
+}
+
+.factory-app--celebrating .conveyor {
+  animation: celebrate 520ms ease both;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes celebrate {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.018) rotate(-0.4deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .factory-app {
+    padding: 14px;
+  }
+
+  .factory-topbar,
+  .prompt-panel,
+  .teacher-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .conveyor {
+    grid-template-columns: 1fr;
+  }
+
+  .sentence-slot {
+    min-height: 94px;
+  }
+
+  .block-tray {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
