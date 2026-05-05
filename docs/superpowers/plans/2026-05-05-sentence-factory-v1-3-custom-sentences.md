@@ -91,7 +91,7 @@ env PATH=/opt/homebrew/bin:$PATH /opt/homebrew/bin/npm run build
 
 Check desktop and mobile. Verify custom sentence creation, custom set selection, and puzzle assembly work.
 
-- [ ] **Step 4: Commit, push, and verify Pages**
+- [x] **Step 4: Commit, push, and verify Pages**
 
 Commit with:
 
