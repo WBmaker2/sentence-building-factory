@@ -53,6 +53,7 @@ button {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -67,6 +68,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 420px;
   min-width: 0;
 }
 
@@ -128,6 +130,8 @@ h2 {
 
 .top-actions {
   display: flex;
+  flex: 1 1 650px;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
@@ -136,15 +140,18 @@ h2 {
 
 .mode-pills {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.mode-pills span,
-.teacher-chip {
+.mode-pill,
+.teacher-chip,
+.teacher-reset {
   min-height: 48px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border: 2px solid #d6c5a9;
   border-radius: 12px;
@@ -156,20 +163,27 @@ h2 {
   white-space: nowrap;
 }
 
-.mode-pills span:nth-child(1) {
+.mode-pill:nth-child(1) {
   color: #16639d;
 }
 
-.mode-pills span:nth-child(2) {
+.mode-pill:nth-child(2) {
   color: #5c4939;
 }
 
-.mode-pills span:nth-child(3) {
+.mode-pill:nth-child(3) {
   color: #7a5a19;
+}
+
+.mode-pill--active {
+  border-color: currentColor;
+  background: #ffffff;
+  box-shadow: 0 5px 0 rgba(70, 52, 36, 0.14), inset 0 3px 0 rgba(255, 255, 255, 0.7);
 }
 
 .teacher-tools {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 6px;
@@ -207,6 +221,13 @@ h2 {
 .toggle input {
   inline-size: 22px;
   block-size: 22px;
+}
+
+.teacher-reset {
+  min-height: 42px;
+  background: #fffaf1;
+  color: #6c4224;
+  font-size: 0.92rem;
 }
 
 .factory-stage {
@@ -627,6 +648,8 @@ h2 {
 
 .sentence-slot:focus-visible,
 .word-block:focus-visible,
+.mode-pill:focus-visible,
+.teacher-reset:focus-visible,
 .primary-button:focus-visible,
 .secondary-button:focus-visible,
 .next-button:focus-visible,
@@ -754,6 +777,76 @@ input:focus-visible {
 .next-button {
   background: #12745a;
   color: #ffffff;
+}
+
+.classroom-panel {
+  min-height: 330px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 28px;
+  border: 2px solid #decfb6;
+  border-radius: 18px;
+  background: rgba(255, 250, 241, 0.95);
+  box-shadow: 0 8px 0 rgba(120, 94, 58, 0.08);
+}
+
+.panel-kicker {
+  margin-bottom: 6px;
+  color: #52617c;
+  font-weight: 1000;
+}
+
+.classroom-panel h2 {
+  margin-bottom: 6px;
+  color: #24364e;
+}
+
+.panel-summary {
+  margin-bottom: 0;
+  color: #3f5069;
+  font-size: 1.12rem;
+  font-weight: 900;
+}
+
+.progress-list,
+.example-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-item,
+.example-list li {
+  display: grid;
+  gap: 8px;
+  min-height: 104px;
+  border: 2px solid #dac9ad;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fffdf7;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.progress-item strong,
+.example-list strong {
+  color: #24364e;
+  font-size: 1.04rem;
+  font-weight: 1000;
+}
+
+.progress-item span,
+.example-list span {
+  color: #4d5d76;
+  font-weight: 850;
+}
+
+.progress-item--done {
+  border-color: #2f9b67;
+  background: #eaf8ef;
 }
 
 .feedback {
@@ -964,13 +1057,15 @@ input:focus-visible {
     display: none;
   }
 
-  .mode-pills span,
+  .mode-pill,
   .teacher-chip,
-  .teacher-tools label {
+  .teacher-tools label,
+  .teacher-reset {
     justify-content: center;
   }
 
-  .teacher-tools select {
+  .teacher-tools select,
+  .teacher-reset {
     width: 100%;
   }
 
@@ -1042,5 +1137,15 @@ input:focus-visible {
   .feedback {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .classroom-panel {
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .progress-list,
+  .example-list {
+    grid-template-columns: 1fr;
   }
 }

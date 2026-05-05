@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { puzzles } from './puzzles';
 
 describe('puzzles', () => {
-  test('contains at least four classroom sentence puzzles', () => {
-    expect(puzzles).toHaveLength(4);
+  test('contains at least ten classroom sentence puzzles', () => {
+    expect(puzzles.length).toBeGreaterThanOrEqual(10);
   });
 
   test('has unique puzzle ids and block ids', () => {

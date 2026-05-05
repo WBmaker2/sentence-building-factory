@@ -47,6 +47,21 @@ describe('sentenceFactory', () => {
     expect(result.feedback).toBe('강아지가 뼈다귀를 먹는 문장이 되었어요.');
   });
 
+  test('formats exclamation marks without an extra space', () => {
+    const excitedPuzzle: SentencePuzzle = {
+      ...puzzle,
+      answer: ['dog-subject', 'bone-object', 'eat-predicate', 'exclamation'],
+      blocks: [
+        ...puzzle.blocks,
+        { id: 'exclamation', text: '!', role: 'punctuation' },
+      ],
+    };
+
+    const result = evaluateSentence(excitedPuzzle, ['dog-subject', 'bone-object', 'eat-predicate', 'exclamation']);
+
+    expect(result.sentenceText).toBe('강아지가 뼈다귀를 먹는다!');
+  });
+
   test('reports incomplete and incorrect sentences', () => {
     const incomplete = evaluateSentence(puzzle, ['dog-subject', null, 'eat-predicate', 'period']);
     const wrong = evaluateSentence(puzzle, ['dog-subject', 'bone-object', 'eat-predicate', 'question']);

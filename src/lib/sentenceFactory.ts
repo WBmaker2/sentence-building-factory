@@ -57,7 +57,7 @@ export function getSentenceText(puzzle: SentencePuzzle, slots: SlotState): strin
   return slots
     .map((blockId) => getBlockById(puzzle, blockId)?.text ?? '')
     .join(' ')
-    .replace(/\s+([.?])/g, '$1')
+    .replace(/\s+([.?!])/g, '$1')
     .trim();
 }
 
