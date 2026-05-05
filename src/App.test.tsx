@@ -1,7 +1,36 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 import App from './App';
+
+function createStorageMock(): Storage {
+  let store: Record<string, string> = {};
+
+  return {
+    get length() {
+      return Object.keys(store).length;
+    },
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    getItem: vi.fn((key: string) => store[key] ?? null),
+    key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+  };
+}
+
+beforeEach(() => {
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: createStorageMock(),
+  });
+  window.localStorage.clear();
+});
 
 async function placeBlock(user: ReturnType<typeof userEvent.setup>, text: string, slotLabel: RegExp) {
   await user.click(screen.getByRole('button', { name: `${text} 블록 선택` }));
@@ -84,6 +113,71 @@ test('lets the teacher choose random lesson progression', async () => {
   await user.selectOptions(screen.getByLabelText('진행 방식'), 'random');
 
   expect(screen.getByLabelText('진행 방식')).toHaveValue('random');
+});
+
+test('lets the teacher create and practice a custom sentence', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  await user.type(screen.getByLabelText('문장 이름'), '토끼 문장');
+  await user.type(screen.getByLabelText('누가 카드'), '토끼가');
+  await user.type(screen.getByLabelText('무엇을 카드'), '당근을');
+  await user.type(screen.getByLabelText('어찌한다 카드'), '먹는다');
+  await user.click(screen.getByRole('button', { name: '내 문장 추가' }));
+
+  expect(screen.getByText('1 / 1')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: '토끼 문장' })).toBeInTheDocument();
+
+  await placeBlock(user, '토끼가', /1번 칸/);
+  await placeBlock(user, '당근을', /2번 칸/);
+  await placeBlock(user, '먹는다', /3번 칸/);
+  await placeBlock(user, '.', /4번 칸/);
+  await user.click(screen.getByRole('button', { name: '정답 확인' }));
+
+  expect(screen.getByText('참 잘했어요!')).toBeInTheDocument();
+  expect(screen.getByRole('status')).toHaveTextContent('토끼가 당근을 먹는다.');
+});
+
+test('restores custom sentences from local storage', async () => {
+  window.localStorage.setItem(
+    'sentence-factory-custom-puzzles-v1',
+    JSON.stringify([
+      {
+        id: 'teacher-custom-saved',
+        title: '저장 문장',
+        prompt: '선생님이 만든 문장을 완성해요.',
+        slots: ['subject', 'object', 'predicate', 'punctuation'],
+        answer: [
+          'teacher-custom-saved-subject',
+          'teacher-custom-saved-object',
+          'teacher-custom-saved-predicate',
+          'teacher-custom-saved-period',
+        ],
+        feedback: '저장한 문장이 완성되었어요.',
+        blocks: [
+          { id: 'teacher-custom-saved-subject', text: '우리가', role: 'subject' },
+          { id: 'teacher-custom-saved-subject-distractor', text: '강아지가', role: 'subject' },
+          { id: 'teacher-custom-saved-object', text: '노래를', role: 'object' },
+          { id: 'teacher-custom-saved-object-distractor', text: '책을', role: 'object' },
+          { id: 'teacher-custom-saved-predicate', text: '부른다', role: 'predicate' },
+          { id: 'teacher-custom-saved-predicate-distractor', text: '읽는다', role: 'predicate' },
+          { id: 'teacher-custom-saved-period', text: '.', role: 'punctuation' },
+          { id: 'teacher-custom-saved-question', text: '?', role: 'punctuation' },
+        ],
+      },
+    ]),
+  );
+
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  await user.selectOptions(screen.getByLabelText('오늘 문장 세트'), 'custom');
+  await user.click(screen.getByRole('button', { name: '학생 모드' }));
+
+  expect(screen.getByRole('heading', { name: '저장 문장' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '우리가 블록 선택' })).toBeInTheDocument();
 });
 
 test('records progress after a correct sentence', async () => {

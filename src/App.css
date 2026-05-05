@@ -654,6 +654,7 @@ h2 {
 .word-block:focus-visible,
 .mode-pill:focus-visible,
 .teacher-reset:focus-visible,
+.icon-text-button:focus-visible,
 .primary-button:focus-visible,
 .secondary-button:focus-visible,
 .next-button:focus-visible,
@@ -857,6 +858,112 @@ input:focus-visible {
   background: #fff8e9;
   color: #24364e;
   box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.custom-sentence-form {
+  display: grid;
+  gap: 12px;
+  border: 2px solid #d8c59f;
+  border-radius: 14px;
+  padding: 16px;
+  background: #f7fbff;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.custom-form-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.custom-form-grid {
+  display: grid;
+  grid-template-columns: 1.15fr repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.custom-form-grid label {
+  display: grid;
+  gap: 7px;
+  color: #4a3a2b;
+  font-weight: 1000;
+}
+
+.custom-form-grid input,
+.custom-form-grid select {
+  width: 100%;
+  min-height: 46px;
+  border: 2px solid #c8b89f;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #253047;
+  font-weight: 900;
+}
+
+.custom-form-grid input::placeholder {
+  color: #8a7b68;
+}
+
+.custom-add-button {
+  min-height: 46px;
+}
+
+.custom-form-message {
+  min-height: 22px;
+  margin-bottom: 0;
+  color: #16639d;
+  font-weight: 900;
+}
+
+.custom-sentence-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.custom-sentence-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 2px solid #cfe0ea;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #ffffff;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.custom-sentence-list span {
+  display: grid;
+  gap: 4px;
+  color: #4d5d76;
+  font-weight: 850;
+}
+
+.custom-sentence-list strong {
+  color: #24364e;
+  font-weight: 1000;
+}
+
+.icon-text-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 2px solid #d6c5a9;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #fffaf1;
+  color: #6c4224;
+  font-weight: 1000;
+  box-shadow: 0 4px 0 rgba(121, 95, 57, 0.1);
 }
 
 .lesson-guide strong {
@@ -1256,7 +1363,14 @@ input:focus-visible {
 
   .progress-list,
   .example-list,
-  .lesson-controls {
+  .lesson-controls,
+  .custom-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .custom-form-header,
+  .custom-sentence-list li {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
