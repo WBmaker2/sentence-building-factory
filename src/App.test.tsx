@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import App from './App';
@@ -62,6 +62,30 @@ test('switches between student, progress, and example views', async () => {
   expect(screen.getByRole('heading', { name: '강아지 문장' })).toBeInTheDocument();
 });
 
+test('filters the student activity by the selected lesson sentence set', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  expect(screen.getByRole('heading', { name: '수업 진행' })).toBeInTheDocument();
+
+  await user.selectOptions(screen.getByLabelText('오늘 문장 세트'), 'question');
+  await user.click(screen.getByRole('button', { name: '학생 모드' }));
+
+  expect(screen.getByText('1 / 2')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: '물음표 문장' })).toBeInTheDocument();
+});
+
+test('lets the teacher choose random lesson progression', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  await user.selectOptions(screen.getByLabelText('진행 방식'), 'random');
+
+  expect(screen.getByLabelText('진행 방식')).toHaveValue('random');
+});
+
 test('records progress after a correct sentence', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -75,6 +99,40 @@ test('records progress after a correct sentence', async () => {
 
   expect(screen.getByText('완성한 문장 1개')).toBeInTheDocument();
   expect(screen.getByText('강아지 문장 완료')).toBeInTheDocument();
+});
+
+test('copies completed lesson sentences for the teacher', async () => {
+  const originalClipboard = window.navigator.clipboard;
+  const clipboard = originalClipboard ?? { writeText: async () => undefined };
+
+  Object.defineProperty(window.navigator, 'clipboard', {
+    configurable: true,
+    value: clipboard,
+  });
+  const writeText = vi.spyOn(window.navigator.clipboard!, 'writeText').mockResolvedValue(undefined);
+
+  const user = userEvent.setup();
+  render(<App />);
+
+  await placeBlock(user, '강아지가', /1번 칸/);
+  await placeBlock(user, '뼈다귀를', /2번 칸/);
+  await placeBlock(user, '먹는다', /3번 칸/);
+  await placeBlock(user, '.', /4번 칸/);
+  await user.click(screen.getByRole('button', { name: '정답 확인' }));
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+
+  expect(screen.getByText('강아지가 뼈다귀를 먹는다.')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('button', { name: '완성 문장 복사' })).toBeEnabled());
+
+  await user.click(screen.getByRole('button', { name: '완성 문장 복사' }));
+
+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('강아지가 뼈다귀를 먹는다.'));
+  expect(screen.getByRole('status')).toHaveTextContent('완성 문장을 복사했어요.');
+
+  Object.defineProperty(window.navigator, 'clipboard', {
+    configurable: true,
+    value: originalClipboard,
+  });
 });
 
 test('reads the assembled sentence aloud when speech synthesis is available', async () => {

@@ -4,6 +4,8 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
+  Copy,
   RotateCcw,
   Sparkles,
   UserRound,
@@ -21,11 +23,14 @@ import {
   removeBlock,
   roleLabels,
   type SentenceBlock,
+  type SentencePuzzle,
   type SlotState,
 } from './lib/sentenceFactory';
 
 const successMessage = '참 잘했어요!';
-type AppView = 'student' | 'progress' | 'examples';
+type AppView = 'student' | 'lesson' | 'progress' | 'examples';
+type LessonSetId = 'all' | 'period' | 'question' | 'exclamation';
+type PracticeMode = 'sequential' | 'random';
 const assetUrl = (fileName: string) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 
 const generatedAssets = {
@@ -37,8 +42,16 @@ const generatedAssets = {
 
 const viewOptions: Array<{ id: AppView; label: string; icon: typeof UsersRound }> = [
   { id: 'student', label: '학생 모드', icon: UsersRound },
+  { id: 'lesson', label: '수업 진행', icon: ClipboardList },
   { id: 'progress', label: '진행 현황', icon: BarChart3 },
   { id: 'examples', label: '문장 예시', icon: BookOpenText },
+];
+
+const lessonSets: Array<{ id: LessonSetId; label: string; helper: string }> = [
+  { id: 'all', label: '전체 문장 세트', helper: '모든 문장 부호를 골고루 연습해요.' },
+  { id: 'period', label: '마침표 문장 세트', helper: '생각이나 겪은 일을 마침표로 끝내요.' },
+  { id: 'question', label: '물음표 문장 세트', helper: '묻는 문장을 물음표로 끝내요.' },
+  { id: 'exclamation', label: '느낌표 문장 세트', helper: '느낌을 살려 느낌표로 끝내요.' },
 ];
 
 function getRoleClass(block: SentenceBlock) {
@@ -52,6 +65,30 @@ function getSlotLabel(index: number, roleLabel: string, block?: SentenceBlock) {
     : `${baseLabel}, 비어 있음. 선택한 블록을 눌러서 놓기`;
 }
 
+function getAnswerPunctuation(puzzle: SentencePuzzle) {
+  const punctuationIndex = puzzle.slots.indexOf('punctuation');
+  const punctuationBlockId = puzzle.answer[punctuationIndex] ?? null;
+  return getBlockById(puzzle, punctuationBlockId)?.text;
+}
+
+function matchesLessonSet(puzzle: SentencePuzzle, lessonSetId: LessonSetId) {
+  const punctuation = getAnswerPunctuation(puzzle);
+
+  if (lessonSetId === 'period') {
+    return punctuation === '.';
+  }
+
+  if (lessonSetId === 'question') {
+    return punctuation === '?';
+  }
+
+  if (lessonSetId === 'exclamation') {
+    return punctuation === '!';
+  }
+
+  return true;
+}
+
 export default function App() {
   const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [slots, setSlots] = useState<SlotState>(() => createEmptySlots(puzzles[0]));
@@ -61,21 +98,38 @@ export default function App() {
   const [activeView, setActiveView] = useState<AppView>('student');
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<Set<string>>(() => new Set());
   const [readAloudMessage, setReadAloudMessage] = useState('');
+  const [lessonSetId, setLessonSetId] = useState<LessonSetId>('all');
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>('sequential');
+  const [copyMessage, setCopyMessage] = useState('');
 
-  const puzzle = puzzles[puzzleIndex];
+  const activePuzzles = useMemo(
+    () => puzzles.filter((item) => matchesLessonSet(item, lessonSetId)),
+    [lessonSetId],
+  );
+  const boundedPuzzleIndex = Math.min(puzzleIndex, activePuzzles.length - 1);
+  const puzzle = activePuzzles[boundedPuzzleIndex] ?? puzzles[0];
   const evaluation = useMemo(() => evaluateSentence(puzzle, slots), [puzzle, slots]);
   const usedBlockIds = new Set(slots.filter((blockId): blockId is string => Boolean(blockId)));
   const availableBlocks = puzzle.blocks.filter((block) => !usedBlockIds.has(block.id));
   const selectedBlock = getBlockById(puzzle, selectedBlockId);
   const showSuccess = checked && evaluation.isCorrect;
-  const statusMessage = readAloudMessage || (checked
+  const activeLessonSet = lessonSets.find((set) => set.id === lessonSetId) ?? lessonSets[0];
+  const completedPuzzles = useMemo(
+    () => puzzles.filter((item) => completedPuzzleIds.has(item.id)),
+    [completedPuzzleIds],
+  );
+  const completedSentencesText = completedPuzzles
+    .map((item, index) => `${index + 1}. ${getSentenceText(item, item.answer)}`)
+    .join('\n');
+  const completedInActiveSet = activePuzzles.filter((item) => completedPuzzleIds.has(item.id)).length;
+  const statusMessage = copyMessage || readAloudMessage || (checked
     ? `${evaluation.feedback} ${evaluation.sentenceText}`
     : selectedBlock
       ? `${selectedBlock.text} 블록을 골랐어요. 넣을 칸을 눌러 보세요.`
       : evaluation.sentenceText || '단어 블록을 골라 문장을 만들어 보세요.');
 
   function loadPuzzle(nextIndex: number) {
-    const nextPuzzle = puzzles[nextIndex];
+    const nextPuzzle = activePuzzles[nextIndex];
     if (!nextPuzzle) {
       return;
     }
@@ -85,6 +139,7 @@ export default function App() {
     setSelectedBlockId(null);
     setChecked(false);
     setReadAloudMessage('');
+    setCopyMessage('');
     setActiveView('student');
   }
 
@@ -92,6 +147,7 @@ export default function App() {
     setSelectedBlockId((current) => (current === blockId ? null : blockId));
     setChecked(false);
     setReadAloudMessage('');
+    setCopyMessage('');
   }
 
   function handlePlace(slotIndex: number, blockId: string) {
@@ -99,6 +155,7 @@ export default function App() {
     setSelectedBlockId(null);
     setChecked(false);
     setReadAloudMessage('');
+    setCopyMessage('');
   }
 
   function handleSlotClick(slotIndex: number) {
@@ -110,6 +167,7 @@ export default function App() {
     setSlots((current) => removeBlock(current, slotIndex));
     setChecked(false);
     setReadAloudMessage('');
+    setCopyMessage('');
   }
 
   function handleDrop(event: DragEvent<HTMLButtonElement>, slotIndex: number) {
@@ -123,6 +181,7 @@ export default function App() {
   function handleCheck() {
     setChecked(true);
     setReadAloudMessage('');
+    setCopyMessage('');
 
     if (evaluation.isCorrect) {
       setCompletedPuzzleIds((current) => {
@@ -138,10 +197,24 @@ export default function App() {
     setSelectedBlockId(null);
     setChecked(false);
     setReadAloudMessage('');
+    setCopyMessage('');
   }
 
   function handleNext() {
-    loadPuzzle((puzzleIndex + 1) % puzzles.length);
+    if (activePuzzles.length === 0) {
+      return;
+    }
+
+    if (practiceMode === 'random' && activePuzzles.length > 1) {
+      let nextIndex = Math.floor(Math.random() * activePuzzles.length);
+      if (nextIndex === boundedPuzzleIndex) {
+        nextIndex = (nextIndex + 1) % activePuzzles.length;
+      }
+      loadPuzzle(nextIndex);
+      return;
+    }
+
+    loadPuzzle((boundedPuzzleIndex + 1) % activePuzzles.length);
   }
 
   function handleProgressReset() {
@@ -150,9 +223,43 @@ export default function App() {
     setActiveView('student');
   }
 
+  function handleLessonSetChange(nextLessonSetId: LessonSetId) {
+    const nextPuzzles = puzzles.filter((item) => matchesLessonSet(item, nextLessonSetId));
+    const nextPuzzle = nextPuzzles[0] ?? puzzles[0];
+
+    setLessonSetId(nextLessonSetId);
+    setPuzzleIndex(0);
+    setSlots(createEmptySlots(nextPuzzle));
+    setSelectedBlockId(null);
+    setChecked(false);
+    setReadAloudMessage('');
+    setCopyMessage('');
+  }
+
+  async function handleCopyResults() {
+    if (!completedSentencesText) {
+      setCopyMessage('복사할 완성 문장이 아직 없어요.');
+      return;
+    }
+
+    const clipboard = window.navigator.clipboard;
+    if (!clipboard) {
+      setCopyMessage('이 브라우저에서는 자동 복사를 지원하지 않아요.');
+      return;
+    }
+
+    try {
+      await clipboard.writeText(completedSentencesText);
+      setCopyMessage('완성 문장을 복사했어요.');
+    } catch {
+      setCopyMessage('이 브라우저에서는 자동 복사를 지원하지 않아요.');
+    }
+  }
+
   function handleReadAloud() {
     const textToRead = evaluation.sentenceText || puzzle.prompt;
     const synthesis = window.speechSynthesis;
+    setCopyMessage('');
 
     if (!synthesis) {
       setReadAloudMessage('읽어 주기를 지원하지 않는 브라우저예요.');
@@ -205,10 +312,10 @@ export default function App() {
               <select
                 value={puzzle.id}
                 onChange={(event) =>
-                  loadPuzzle(puzzles.findIndex((item) => item.id === event.target.value))
+                  loadPuzzle(activePuzzles.findIndex((item) => item.id === event.target.value))
                 }
               >
-                {puzzles.map((item) => (
+                {activePuzzles.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.title}
                   </option>
@@ -243,7 +350,7 @@ export default function App() {
 
         <div className="prompt-panel">
           <p className="stage-count">
-            {puzzleIndex + 1} / {puzzles.length}
+            {boundedPuzzleIndex + 1} / {activePuzzles.length}
           </p>
           <h2 id="puzzle-title">{puzzle.title}</h2>
           <p>{puzzle.prompt}</p>
@@ -306,6 +413,82 @@ export default function App() {
               <span>{evaluation.sentenceText || '단어 블록을 기차 칸에 올려놓으면 문장이 보여요.'}</span>
             </div>
           </>
+        ) : null}
+
+        {activeView === 'lesson' ? (
+          <section className="classroom-panel lesson-panel" aria-labelledby="lesson-title">
+            <div>
+              <p className="panel-kicker">수업 준비</p>
+              <h2 id="lesson-title">수업 진행</h2>
+              <p className="panel-summary">
+                {activeLessonSet.label} · {activePuzzles.length}문장 중 {completedInActiveSet}문장 완성
+              </p>
+            </div>
+
+            <div className="lesson-controls">
+              <label className="lesson-control">
+                오늘 문장 세트
+                <select
+                  value={lessonSetId}
+                  onChange={(event) => handleLessonSetChange(event.target.value as LessonSetId)}
+                >
+                  {lessonSets.map((set) => (
+                    <option key={set.id} value={set.id}>
+                      {set.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="lesson-control">
+                진행 방식
+                <select
+                  value={practiceMode}
+                  onChange={(event) => {
+                    setPracticeMode(event.target.value as PracticeMode);
+                    setCopyMessage('');
+                  }}
+                >
+                  <option value="sequential">순서대로 풀기</option>
+                  <option value="random">랜덤으로 풀기</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="lesson-guide">
+              <strong>{activeLessonSet.helper}</strong>
+              <span>
+                다음 문장 버튼은 현재 세트 안에서만 이동해요. 단계 선택 목록도 오늘 문장 세트에 맞춰 줄어듭니다.
+              </span>
+            </div>
+
+            <div className="lesson-copy-row">
+              <button
+                className="secondary-button copy-button"
+                type="button"
+                onClick={handleCopyResults}
+                disabled={completedPuzzles.length === 0}
+              >
+                <Copy aria-hidden="true" size={20} />
+                완성 문장 복사
+              </button>
+              <span className="copy-message" aria-live="polite">
+                {copyMessage || '완성한 문장을 수업 기록으로 모을 수 있어요.'}
+              </span>
+            </div>
+
+            {completedPuzzles.length > 0 ? (
+              <ol className="completed-sentence-list">
+                {completedPuzzles.map((item) => (
+                  <li key={item.id}>
+                    <strong>{item.title}</strong>
+                    <span>{getSentenceText(item, item.answer)}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="empty-state">아직 완성한 문장이 없어요.</p>
+            )}
+          </section>
         ) : null}
 
         {activeView === 'progress' ? (
