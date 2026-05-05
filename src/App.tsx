@@ -4,9 +4,12 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
   ClipboardList,
   Copy,
+  FileDown,
   PlusCircle,
+  Printer,
   RotateCcw,
   Sparkles,
   Trash2,
@@ -39,6 +42,13 @@ type CustomSentenceForm = {
   object: string;
   predicate: string;
   punctuation: '.' | '?' | '!';
+};
+type LessonResultRow = {
+  setLabel: string;
+  title: string;
+  sentence: string;
+  punctuation: string;
+  completed: boolean;
 };
 const assetUrl = (fileName: string) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const customPuzzleStorageKey = 'sentence-factory-custom-puzzles-v1';
@@ -192,6 +202,58 @@ function createCustomPuzzle(form: CustomSentenceForm, order: number): SentencePu
   };
 }
 
+function createLessonResultRows(
+  lessonSetLabel: string,
+  lessonPuzzles: SentencePuzzle[],
+  completedPuzzleIds: Set<string>,
+): LessonResultRow[] {
+  return lessonPuzzles.map((item) => ({
+    setLabel: lessonSetLabel,
+    title: item.title,
+    sentence: getSentenceText(item, item.answer),
+    punctuation: getAnswerPunctuation(item) ?? '',
+    completed: completedPuzzleIds.has(item.id),
+  }));
+}
+
+function formatLessonResultsText(
+  lessonSetLabel: string,
+  rows: LessonResultRow[],
+  completedCount: number,
+) {
+  const summaryLines = [
+    '뚝딱뚝딱 문장 만들기 공장 수업 결과',
+    `문장 세트: ${lessonSetLabel}`,
+    `완성: ${completedCount}/${rows.length}`,
+    '',
+  ];
+  const rowLines = rows.map((row, index) =>
+    `${index + 1}. [${row.completed ? '완료' : '연습 전'}] ${row.title} - ${row.sentence}`,
+  );
+
+  return [...summaryLines, ...rowLines].join('\n');
+}
+
+function escapeCsvCell(value: string | number | boolean) {
+  const text = String(value).replace(/\r?\n/g, ' ');
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function formatLessonResultsCsv(rows: LessonResultRow[]) {
+  const headers = ['문장 세트', '문장 이름', '완성 문장', '문장 부호', '완료 여부'];
+  const csvRows = rows.map((row) => [
+    row.setLabel,
+    row.title,
+    row.sentence,
+    row.punctuation,
+    row.completed ? '완료' : '연습 전',
+  ]);
+
+  return `\uFEFF${[headers, ...csvRows]
+    .map((row) => row.map(escapeCsvCell).join(','))
+    .join('\n')}`;
+}
+
 export default function App() {
   const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [slots, setSlots] = useState<SlotState>(() => createEmptySlots(puzzles[0]));
@@ -225,10 +287,16 @@ export default function App() {
     () => allPuzzles.filter((item) => completedPuzzleIds.has(item.id)),
     [allPuzzles, completedPuzzleIds],
   );
-  const completedSentencesText = completedPuzzles
-    .map((item, index) => `${index + 1}. ${getSentenceText(item, item.answer)}`)
-    .join('\n');
   const completedInActiveSet = activePuzzles.filter((item) => completedPuzzleIds.has(item.id)).length;
+  const remainingInActiveSet = activePuzzles.length - completedInActiveSet;
+  const lessonResultRows = useMemo(
+    () => createLessonResultRows(activeLessonSet.label, activePuzzles, completedPuzzleIds),
+    [activeLessonSet.label, activePuzzles, completedPuzzleIds],
+  );
+  const lessonResultsText = useMemo(
+    () => formatLessonResultsText(activeLessonSet.label, lessonResultRows, completedInActiveSet),
+    [activeLessonSet.label, completedInActiveSet, lessonResultRows],
+  );
   const statusMessage = copyMessage || readAloudMessage || (checked
     ? `${evaluation.feedback} ${evaluation.sentenceText}`
     : selectedBlock
@@ -399,8 +467,8 @@ export default function App() {
   }
 
   async function handleCopyResults() {
-    if (!completedSentencesText) {
-      setCopyMessage('복사할 완성 문장이 아직 없어요.');
+    if (lessonResultRows.length === 0) {
+      setCopyMessage('복사할 수업 결과가 아직 없어요.');
       return;
     }
 
@@ -411,11 +479,47 @@ export default function App() {
     }
 
     try {
-      await clipboard.writeText(completedSentencesText);
-      setCopyMessage('완성 문장을 복사했어요.');
+      await clipboard.writeText(lessonResultsText);
+      setCopyMessage('수업 결과를 복사했어요.');
     } catch {
       setCopyMessage('이 브라우저에서는 자동 복사를 지원하지 않아요.');
     }
+  }
+
+  function handleDownloadCsv() {
+    if (lessonResultRows.length === 0) {
+      setCopyMessage('저장할 수업 결과가 아직 없어요.');
+      return;
+    }
+
+    if (typeof window.URL.createObjectURL !== 'function') {
+      setCopyMessage('이 브라우저에서는 CSV 저장을 지원하지 않아요.');
+      return;
+    }
+
+    const csvContent = formatLessonResultsCsv(lessonResultRows);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sentence-factory-lesson-results.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    if (typeof window.URL.revokeObjectURL === 'function') {
+      window.URL.revokeObjectURL(url);
+    }
+    setCopyMessage('CSV 파일을 만들었어요.');
+  }
+
+  function handlePrintWorksheet() {
+    if (typeof window.print !== 'function') {
+      setCopyMessage('이 브라우저에서는 인쇄를 지원하지 않아요.');
+      return;
+    }
+
+    setCopyMessage('인쇄 창을 열었어요.');
+    window.print();
   }
 
   function handleReadAloud() {
@@ -623,6 +727,21 @@ export default function App() {
               </span>
             </div>
 
+            <div className="lesson-stats" aria-label="수업 마무리 요약">
+              <div className="lesson-stat">
+                <span>오늘 문장</span>
+                <strong>{activePuzzles.length}</strong>
+              </div>
+              <div className="lesson-stat lesson-stat--done">
+                <span>완료</span>
+                <strong>{completedInActiveSet}</strong>
+              </div>
+              <div className="lesson-stat lesson-stat--remaining">
+                <span>남은 문장</span>
+                <strong>{remainingInActiveSet}</strong>
+              </div>
+            </div>
+
             <form className="custom-sentence-form" onSubmit={handleAddCustomPuzzle}>
               <div className="custom-form-header">
                 <p className="panel-kicker">내 문장 카드</p>
@@ -707,20 +826,49 @@ export default function App() {
               </ul>
             ) : null}
 
-            <div className="lesson-copy-row">
-              <button
-                className="secondary-button copy-button"
-                type="button"
-                onClick={handleCopyResults}
-                disabled={completedPuzzles.length === 0}
-              >
-                <Copy aria-hidden="true" size={20} />
-                완성 문장 복사
-              </button>
+            <section className="lesson-finish" aria-labelledby="lesson-finish-title">
+              <div className="lesson-finish-header">
+                <div>
+                  <p className="panel-kicker">수업 마무리</p>
+                  <h3 id="lesson-finish-title">
+                    <ClipboardCheck aria-hidden="true" size={22} />
+                    결과 정리
+                  </h3>
+                </div>
+                <div className="lesson-finish-actions">
+                  <button
+                    className="secondary-button copy-button"
+                    type="button"
+                    onClick={handleCopyResults}
+                    disabled={lessonResultRows.length === 0}
+                  >
+                    <Copy aria-hidden="true" size={20} />
+                    수업 결과 복사
+                  </button>
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={handleDownloadCsv}
+                    disabled={lessonResultRows.length === 0}
+                  >
+                    <FileDown aria-hidden="true" size={20} />
+                    CSV 저장
+                  </button>
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={handlePrintWorksheet}
+                    disabled={activePuzzles.length === 0}
+                  >
+                    <Printer aria-hidden="true" size={20} />
+                    활동지 인쇄
+                  </button>
+                </div>
+              </div>
               <span className="copy-message" aria-live="polite">
-                {copyMessage || '완성한 문장을 수업 기록으로 모을 수 있어요.'}
+                {copyMessage || '현재 문장 세트의 결과를 정리합니다.'}
               </span>
-            </div>
+            </section>
 
             {completedPuzzles.length > 0 ? (
               <ol className="completed-sentence-list">
@@ -734,6 +882,34 @@ export default function App() {
             ) : (
               <p className="empty-state">아직 완성한 문장이 없어요.</p>
             )}
+
+            <section className="print-worksheet" aria-labelledby="worksheet-title">
+              <div className="worksheet-header">
+                <div>
+                  <p className="panel-kicker">인쇄용 활동지</p>
+                  <h3 id="worksheet-title">{activeLessonSet.label}</h3>
+                </div>
+                <div className="worksheet-lines" aria-label="학생 정보">
+                  <span>이름</span>
+                  <span>날짜</span>
+                </div>
+              </div>
+              <ol className="worksheet-list">
+                {activePuzzles.map((item) => (
+                  <li key={item.id}>
+                    <strong>{item.title}</strong>
+                    <div className="worksheet-slots">
+                      {item.slots.map((role, index) => (
+                        <span key={`${item.id}-${role}-${index}`}>
+                          <b>{roleLabels[role]}</b>
+                          <i aria-hidden="true" />
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
           </section>
         ) : null}
 

@@ -37,6 +37,15 @@ async function placeBlock(user: ReturnType<typeof userEvent.setup>, text: string
   await user.click(screen.getByRole('button', { name: slotLabel }));
 }
 
+function readBlobAsText(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}
+
 test('builds a correct sentence and moves to the next puzzle', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -195,7 +204,7 @@ test('records progress after a correct sentence', async () => {
   expect(screen.getByText('강아지 문장 완료')).toBeInTheDocument();
 });
 
-test('copies completed lesson sentences for the teacher', async () => {
+test('copies lesson results for the teacher', async () => {
   const originalClipboard = window.navigator.clipboard;
   const clipboard = originalClipboard ?? { writeText: async () => undefined };
 
@@ -216,16 +225,96 @@ test('copies completed lesson sentences for the teacher', async () => {
   await user.click(screen.getByRole('button', { name: '수업 진행' }));
 
   expect(screen.getByText('강아지가 뼈다귀를 먹는다.')).toBeInTheDocument();
-  await waitFor(() => expect(screen.getByRole('button', { name: '완성 문장 복사' })).toBeEnabled());
+  await waitFor(() => expect(screen.getByRole('button', { name: '수업 결과 복사' })).toBeEnabled());
 
-  await user.click(screen.getByRole('button', { name: '완성 문장 복사' }));
+  await user.click(screen.getByRole('button', { name: '수업 결과 복사' }));
 
+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('문장 세트: 전체 문장 세트'));
+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('완성: 1/12'));
+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('[완료] 강아지 문장 - 강아지가 뼈다귀를 먹는다.'));
   expect(writeText).toHaveBeenCalledWith(expect.stringContaining('강아지가 뼈다귀를 먹는다.'));
-  expect(screen.getByRole('status')).toHaveTextContent('완성 문장을 복사했어요.');
+  expect(screen.getByRole('status')).toHaveTextContent('수업 결과를 복사했어요.');
 
   Object.defineProperty(window.navigator, 'clipboard', {
     configurable: true,
     value: originalClipboard,
+  });
+});
+
+test('downloads lesson results as a csv file', async () => {
+  const originalCreateObjectURL = window.URL.createObjectURL;
+  const originalRevokeObjectURL = window.URL.revokeObjectURL;
+  const createObjectURL = vi.fn((object: Blob | MediaSource) => {
+    expect(object).toBeInstanceOf(Blob);
+    return 'blob:lesson-results';
+  });
+  const revokeObjectURL = vi.fn();
+  const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+  Object.defineProperty(window.URL, 'createObjectURL', {
+    configurable: true,
+    value: createObjectURL,
+  });
+  Object.defineProperty(window.URL, 'revokeObjectURL', {
+    configurable: true,
+    value: revokeObjectURL,
+  });
+
+  const user = userEvent.setup();
+  render(<App />);
+
+  await placeBlock(user, '강아지가', /1번 칸/);
+  await placeBlock(user, '뼈다귀를', /2번 칸/);
+  await placeBlock(user, '먹는다', /3번 칸/);
+  await placeBlock(user, '.', /4번 칸/);
+  await user.click(screen.getByRole('button', { name: '정답 확인' }));
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  await user.click(screen.getByRole('button', { name: 'CSV 저장' }));
+
+  expect(createObjectURL).toHaveBeenCalledTimes(1);
+  const csvBlob = createObjectURL.mock.calls[0][0] as Blob;
+  const csvText = await readBlobAsText(csvBlob);
+
+  expect(csvText).toContain('문장 세트,문장 이름,완성 문장,문장 부호,완료 여부');
+  expect(csvText).toContain('전체 문장 세트,강아지 문장,강아지가 뼈다귀를 먹는다.,.,완료');
+  expect(revokeObjectURL).toHaveBeenCalledWith('blob:lesson-results');
+  expect(screen.getByRole('status')).toHaveTextContent('CSV 파일을 만들었어요.');
+
+  anchorClick.mockRestore();
+  Object.defineProperty(window.URL, 'createObjectURL', {
+    configurable: true,
+    value: originalCreateObjectURL,
+  });
+  Object.defineProperty(window.URL, 'revokeObjectURL', {
+    configurable: true,
+    value: originalRevokeObjectURL,
+  });
+});
+
+test('opens the print dialog for the worksheet', async () => {
+  const originalPrint = window.print;
+  const print = vi.fn();
+
+  Object.defineProperty(window, 'print', {
+    configurable: true,
+    value: print,
+  });
+
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: '수업 진행' }));
+  expect(screen.getByText('인쇄용 활동지')).toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: '활동지 인쇄' }));
+
+  expect(print).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('heading', { name: '전체 문장 세트' })).toBeInTheDocument();
+  expect(screen.getByRole('status')).toHaveTextContent('인쇄 창을 열었어요.');
+
+  Object.defineProperty(window, 'print', {
+    configurable: true,
+    value: originalPrint,
   });
 });
 

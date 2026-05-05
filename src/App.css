@@ -128,6 +128,14 @@ h2 {
   font-size: 1.55rem;
 }
 
+h3 {
+  margin: 0;
+  color: #24364e;
+  font-size: 1.22rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
 .top-actions {
   display: flex;
   flex: 1 1 650px;
@@ -860,6 +868,46 @@ input:focus-visible {
   box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
 }
 
+.lesson-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.lesson-stat {
+  min-height: 98px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  border: 2px solid #cfe0ea;
+  border-radius: 14px;
+  padding: 16px;
+  background: #f7fbff;
+  color: #24364e;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.lesson-stat span {
+  color: #52617c;
+  font-weight: 1000;
+}
+
+.lesson-stat strong {
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 1000;
+}
+
+.lesson-stat--done {
+  border-color: #a4d7bd;
+  background: #ecf8f1;
+}
+
+.lesson-stat--remaining {
+  border-color: #f0c6a2;
+  background: #fff4e8;
+}
+
 .custom-sentence-form {
   display: grid;
   gap: 12px;
@@ -976,16 +1024,118 @@ input:focus-visible {
   font-weight: 850;
 }
 
-.lesson-copy-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
 .copy-message {
   color: #37506b;
   font-weight: 900;
+}
+
+.lesson-finish {
+  display: grid;
+  gap: 12px;
+  border: 2px solid #d8c59f;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fffdf7;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.lesson-finish-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.lesson-finish h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lesson-finish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.print-worksheet {
+  display: grid;
+  gap: 14px;
+  border: 2px solid #cfe0ea;
+  border-radius: 14px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 5px 0 rgba(124, 95, 55, 0.08);
+}
+
+.worksheet-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.worksheet-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: #52617c;
+  font-weight: 1000;
+}
+
+.worksheet-lines span {
+  min-width: 138px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #9b8870;
+}
+
+.worksheet-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.worksheet-list li {
+  padding: 0 0 12px;
+}
+
+.worksheet-list strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #24364e;
+  font-weight: 1000;
+}
+
+.worksheet-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.worksheet-slots span {
+  min-height: 74px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+  border: 2px dashed #c5b79e;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fffaf1;
+}
+
+.worksheet-slots b {
+  color: #52617c;
+  font-size: 0.9rem;
+}
+
+.worksheet-slots i {
+  display: block;
+  min-height: 28px;
+  border-bottom: 2px solid #decfb6;
 }
 
 .completed-sentence-list {
@@ -1364,13 +1514,94 @@ input:focus-visible {
   .progress-list,
   .example-list,
   .lesson-controls,
-  .custom-form-grid {
+  .lesson-stats,
+  .custom-form-grid,
+  .worksheet-slots {
     grid-template-columns: 1fr;
   }
 
   .custom-form-header,
-  .custom-sentence-list li {
+  .custom-sentence-list li,
+  .lesson-finish-header,
+  .lesson-finish-actions,
+  .worksheet-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .lesson-finish-actions .secondary-button {
+    width: 100%;
+  }
+
+  .worksheet-lines span {
+    min-width: 100%;
+  }
+}
+
+@media print {
+  :root {
+    background: #ffffff;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .factory-app {
+    min-height: auto;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    background: #ffffff;
+  }
+
+  .factory-app::before,
+  .factory-topbar,
+  .helper-strip,
+  .prompt-panel,
+  .lesson-controls,
+  .lesson-guide,
+  .lesson-stats,
+  .custom-sentence-form,
+  .custom-sentence-list,
+  .lesson-finish,
+  .completed-sentence-list,
+  .empty-state,
+  .block-tray,
+  .sr-only {
+    display: none !important;
+  }
+
+  .factory-stage,
+  .classroom-panel,
+  .print-worksheet {
+    width: 100%;
+    max-width: none;
+    min-height: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .print-worksheet {
+    display: grid;
+    gap: 18px;
+  }
+
+  .worksheet-list {
+    gap: 14px;
+  }
+
+  .worksheet-slots {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .worksheet-slots span {
+    min-height: 88px;
+    break-inside: avoid;
   }
 }
