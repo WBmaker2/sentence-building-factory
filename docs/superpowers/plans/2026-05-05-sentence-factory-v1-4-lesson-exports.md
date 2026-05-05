@@ -101,7 +101,7 @@ env PATH=/opt/homebrew/bin:$PATH /opt/homebrew/bin/npm run build
 
 Check desktop and mobile. Verify lesson wrap-up summary, CSV button, print button, and worksheet layout render without overlap.
 
-- [ ] **Step 4: Commit, push, and verify Pages**
+- [x] **Step 4: Commit, push, and verify Pages**
 
 Commit with:
 
