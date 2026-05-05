@@ -102,7 +102,7 @@ env PATH=/opt/homebrew/bin:$PATH /opt/homebrew/bin/npm run build
 
 Check desktop and mobile. Verify no horizontal overflow and that `수업 진행`, `학생 모드`, and copy flow work.
 
-- [ ] **Step 4: Commit, push, and verify Pages**
+- [x] **Step 4: Commit, push, and verify Pages**
 
 Commit with:
 
